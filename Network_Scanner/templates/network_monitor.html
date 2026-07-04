@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Monitor & IPS Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Roboto Mono', monospace;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .severity-critical { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+        .severity-high { color: #f97316; background: rgba(249, 115, 22, 0.1); }
+        .severity-medium { color: #eab308; background: rgba(234, 179, 8, 0.1); }
+        .severity-low { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        
+        .terminal {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            border-radius: 5px;
+            height: 200px;
+            overflow-y: auto;
+        }
+        
+        .blink {
+            animation: blink 1s step-start infinite;
+        }
+        
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-white mb-2">Network Monitor & IPS</h1>
+                    <p class="text-gray-400">Real-time Intrusion Prevention System</p>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="startMonitoring()" id="startBtn" 
+                        class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold">
+                        ▶ Start Monitoring
+                    </button>
+                    <button onclick="stopMonitoring()" id="stopBtn" 
+                        class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold">
+                        ⏹ Stop Monitoring
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-4 h-4 rounded-full pulse" id="statusIndicator" style="background: #ef4444;"></div>
+                    <span class="text-white font-bold" id="statusText">STOPPED</span>
+                </div>
+                <div class="text-gray-400">
+                    Last Updated: <span id="lastUpdate">--:--:--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="glass rounded-2xl p-6">
+                <div class="text-gray-400 text-sm mb-2">TOTAL PACKETS</div>
+                <div class="text-4xl font-bold text-white" id="totalPackets">0</div>
+                <div class="text-green-400 text-sm mt-2">↑ Live</div>
+            </div>
+            
+            <div class="glass rounded-2xl p-6">
+                <div class="text-gray-400 text-sm mb-2">SUSPICIOUS ACTIVITIES</div>
+                <div class="text-4xl font-bold text-orange-500" id="suspiciousCount">0</div>
+                <div class="text-orange-400 text-sm mt-2">⚠ Threats</div>
+            </div>
+            
+            <div class="glass rounded-2xl p-6">
+                <div class="text-gray-400 text-sm mb-2">BLOCKED IPs</div>
+                <div class="text-4xl font-bold text-red-500" id="blockedCount">0</div>
+                <div class="text-red-400 text-sm mt-2">🚫 Denied</div>
+            </div>
+            
+            <div class="glass rounded-2xl p-6">
+                <div class="text-gray-400 text-sm mb-2">HTTP REQUESTS</div>
+                <div class="text-4xl font-bold text-blue-500" id="httpCount">0</div>
+                <div class="text-blue-400 text-sm mt-2">📡 Captured</div>
+            </div>
+        </div>
+
+        <!-- Real-time Alerts -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold text-white mb-4">🚨 Real-time Alerts</h2>
+            <div class="terminal" id="alertTerminal">
+                <div class="blink">▊</div>
+            </div>
+        </div>
+
+        <!-- Suspicious Activities -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-white">⚠️ Recent Suspicious Activities</h2>
+                <button onclick="refreshSuspicious()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                    🔄 Refresh
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="p-3 text-gray-400">Time</th>
+                            <th class="p-3 text-gray-400">Source IP</th>
+                            <th class="p-3 text-gray-400">Attack Type</th>
+                            <th class="p-3 text-gray-400">Severity</th>
+                            <th class="p-3 text-gray-400">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="suspiciousTable" class="text-white">
+                        <tr><td colspan="5" class="p-3 text-center text-gray-500">No suspicious activities detected</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Blocked IPs -->
+        <div class="glass rounded-2xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-white">🚫 Blocked IP Addresses</h2>
+                <button onclick="refreshBlocked()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                    🔄 Refresh
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="p-3 text-gray-400">IP Address</th>
+                            <th class="p-3 text-gray-400">Reason</th>
+                            <th class="p-3 text-gray-400">Blocked At</th>
+                            <th class="p-3 text-gray-400">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="blockedTable" class="text-white">
+                        <tr><td colspan="4" class="p-3 text-center text-gray-500">No blocked IPs</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let updateInterval;
+        let isMonitoring = false;
+
+        async function startMonitoring() {
+            try {
+                const duration = prompt("Enter duration in seconds (leave empty for continuous):");
+                
+                const response = await fetch('/api/network/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        duration: duration ? parseInt(duration) : null
+                    })
+                });
+
+                if (response.ok) {
+                    isMonitoring = true;
+                    document.getElementById('statusIndicator').style.background = '#10b981';
+                    document.getElementById('statusText').textContent = 'MONITORING';
+                    document.getElementById('startBtn').disabled = true;
+                    
+                    addAlert('System', 'Network monitoring started', 'info');
+                    
+                    // Start auto-refresh
+                    updateInterval = setInterval(updateStats, 2000);
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.error);
+                }
+            } catch (error) {
+                alert('Failed to start monitoring: ' + error.message);
+            }
+        }
+
+        async function stopMonitoring() {
+            try {
+                const response = await fetch('/api/network/stop', {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    isMonitoring = false;
+                    document.getElementById('statusIndicator').style.background = '#ef4444';
+                    document.getElementById('statusText').textContent = 'STOPPED';
+                    document.getElementById('startBtn').disabled = false;
+                    
+                    addAlert('System', 'Network monitoring stopped', 'info');
+                    
+                    if (updateInterval) {
+                        clearInterval(updateInterval);
+                    }
+                }
+            } catch (error) {
+                alert('Failed to stop monitoring: ' + error.message);
+            }
+        }
+
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/network/stats');
+                const data = await response.json();
+
+                document.getElementById('totalPackets').textContent = data.packet_count;
+                document.getElementById('suspiciousCount').textContent = data.stats.suspicious_activities;
+                document.getElementById('blockedCount').textContent = data.blocked_ips_count;
+                document.getElementById('httpCount').textContent = data.stats.http_requests;
+                
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error('Failed to update stats:', error);
+            }
+        }
+
+        async function refreshSuspicious() {
+            try {
+                const response = await fetch('/api/network/suspicious?limit=20');
+                const activities = await response.json();
+
+                const table = document.getElementById('suspiciousTable');
+                
+                if (activities.length === 0) {
+                    table.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-gray-500">No suspicious activities detected</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = activities.map(act => `
+                    <tr class="border-b border-gray-800 hover:bg-white/5">
+                        <td class="p-3">${new Date(act.timestamp).toLocaleTimeString()}</td>
+                        <td class="p-3 font-mono">${act.src_ip}</td>
+                        <td class="p-3">${act.attack_type}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-1 rounded severity-${act.severity.toLowerCase()}">
+                                ${act.severity}
+                            </span>
+                        </td>
+                        <td class="p-3">
+                            ${act.blocked ? '<span class="text-red-500">🚫 BLOCKED</span>' : '<span class="text-yellow-500">⚠ ALERT</span>'}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to refresh suspicious activities:', error);
+            }
+        }
+
+        async function refreshBlocked() {
+            try {
+                const response = await fetch('/api/network/blocked-ips');
+                const blocked = await response.json();
+
+                const table = document.getElementById('blockedTable');
+                
+                if (blocked.length === 0) {
+                    table.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">No blocked IPs</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = blocked.map(ip => `
+                    <tr class="border-b border-gray-800 hover:bg-white/5">
+                        <td class="p-3 font-mono">${ip.ip_address}</td>
+                        <td class="p-3">${ip.reason}</td>
+                        <td class="p-3">${new Date(ip.blocked_at).toLocaleString()}</td>
+                        <td class="p-3">
+                            <button onclick="unblockIP('${ip.ip_address}')" 
+                                class="px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm">
+                                Unblock
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to refresh blocked IPs:', error);
+            }
+        }
+
+        async function unblockIP(ip) {
+            if (!confirm(`Unblock IP ${ip}?`)) return;
+
+            try {
+                const response = await fetch(`/api/network/unblock/${ip}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    addAlert('System', `IP ${ip} unblocked`, 'success');
+                    refreshBlocked();
+                } else {
+                    alert('Failed to unblock IP');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function addAlert(source, message, type) {
+            const terminal = document.getElementById('alertTerminal');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'danger' ? '#ef4444' : type === 'warning' ? '#f59e0b' : type === 'success' ? '#10b981' : '#3b82f6';
+            
+            const alert = document.createElement('div');
+            alert.style.color = color;
+            alert.textContent = `[${time}] [${source}] ${message}`;
+            
+            terminal.insertBefore(alert, terminal.firstChild);
+            
+            // Keep only last 20 alerts
+            while (terminal.children.length > 20) {
+                terminal.removeChild(terminal.lastChild);
+            }
+        }
+
+        // Auto-refresh data every 5 seconds
+        setInterval(() => {
+            refreshSuspicious();
+            refreshBlocked();
+        }, 5000);
+
+        // Initial load
+        window.onload = () => {
+            refreshSuspicious();
+            refreshBlocked();
+            updateStats();
+        };
+    </script>
+</body>
+</html>
