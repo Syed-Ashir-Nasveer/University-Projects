@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Scanner - VIP Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        
+        /* 3D Button Styles */
+        .btn-3d {
+            position: relative; display: inline-block; padding: 15px 35px; margin: 10px;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+            border: none; border-radius: 15px; cursor: pointer;
+            transition: all 0.3s ease; overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .btn-3d::before {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%; background: rgba(255,255,255,0.3);
+            transition: all 0.4s ease;
+        }
+        .btn-3d:hover::before { left: 100%; }
+        .btn-3d:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .btn-3d:active { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        
+        /* Button Colors */
+        .btn-html { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-pdf { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+        .btn-excel { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+        .btn-word { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; }
+        .btn-json { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; }
+        .btn-csv { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); color: white; }
+        .btn-all { background: linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%); color: white; font-size: 1.1em; padding: 18px 45px; }
+        
+        /* Glass Effect */
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        
+        /* Animations */
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        .float-animation { animation: float 3s ease-in-out infinite; }
+        
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .pulse-animation { animation: pulse 2s ease-in-out infinite; }
+        
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .download-icon { display: inline-block; animation: bounce 2s ease-in-out infinite; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 20px; padding: 40px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Spinner */
+        .spinner { border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Format Cards */
+        .format-card { background: white; border-radius: 15px; padding: 25px; text-align: center; transition: all 0.3s ease; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .format-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
+        .format-icon { font-size: 3em; margin-bottom: 15px; }
+        
+        /* Progress Bar */
+        .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden; margin: 20px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); width: 0%; transition: width 0.3s ease; }
+        
+        /* Scan Progress */
+        .scan-status { background: rgba(255,255,255,0.9); border-radius: 10px; padding: 15px; margin: 10px 0; }
+        .scan-step { padding: 10px; margin: 5px 0; border-left: 3px solid #667eea; }
+        .scan-step.active { background: #e0e7ff; border-left-color: #4338ca; }
+        .scan-step.completed { background: #dcfce7; border-left-color: #16a34a; }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8 float-animation">
+            <div class="inline-block p-6 glass rounded-full mb-4">
+                <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+            <h1 class="text-5xl font-bold text-white mb-2">Security Scanner</h1>
+            <p class="text-white text-xl opacity-90">VIP Report Generator Dashboard</p>
+        </div>
+
+        <!-- Scan Form -->
+        <div class="glass rounded-2xl p-8 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-6">🚀 Start New Scan</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-white mb-2 font-semibold">Target URL</label>
+                    <input type="text" id="targetUrl" placeholder="http://testphp.vulnweb.com" value="http://testphp.vulnweb.com"
+                        class="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white/60 focus:bg-white/30 transition-all">
+                    <p class="text-white/70 text-sm mt-2">💡 Tip: Use test sites like testphp.vulnweb.com for safe scanning</p>
+                </div>
+                <div>
+                    <label class="block text-white mb-2 font-semibold">Scan Type</label>
+                    <select id="scanType" class="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:border-white/60 focus:bg-white/30 transition-all">
+                        <option value="quick">⚡ Quick Scan (5-10 min)</option>
+                        <option value="standard">🔍 Standard Scan (15-30 min)</option>
+                        <option value="deep">🛡️ Deep Scan (1-2 hours)</option>
+                    </select>
+                </div>
+                <button onclick="startScan()" id="scanBtn"
+                    class="w-full py-4 bg-gradient-to-r from-green-400 to-blue-500 text-white font-bold rounded-lg hover:from-green-500 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg">
+                    🔐 Start Security Scan
+                </button>
+            </div>
+        </div>
+
+        <!-- Scan Progress Section -->
+        <div class="glass rounded-2xl p-8 mb-8" id="scanProgressSection" style="display: none;">
+            <h2 class="text-2xl font-bold text-white mb-4">⏳ Scanning in Progress...</h2>
+            <div class="scan-status">
+                <div id="scanStep1" class="scan-step">
+                    <strong>Step 1:</strong> Connecting to target...
+                </div>
+                <div id="scanStep2" class="scan-step">
+                    <strong>Step 2:</strong> Spider crawling pages...
+                </div>
+                <div id="scanStep3" class="scan-step">
+                    <strong>Step 3:</strong> Passive vulnerability detection...
+                </div>
+                <div id="scanStep4" class="scan-step">
+                    <strong>Step 4:</strong> Active security testing...
+                </div>
+            </div>
+            <div class="progress-bar mt-4">
+                <div class="progress-fill" id="scanProgressBar"></div>
+            </div>
+            <p class="text-white text-center mt-4" id="scanProgressText">Initializing scan...</p>
+        </div>
+
+        <!-- Results Preview -->
+        <div class="glass rounded-2xl p-8 mb-8" id="resultsPreview" style="display: none;">
+            <h2 class="text-2xl font-bold text-white mb-6">🔍 Scan Results</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-lg p-6 text-center">
+                    <div class="text-4xl font-bold text-purple-600" id="totalCount">0</div>
+                    <div class="text-gray-600 mt-2">Total Issues</div>
+                </div>
+                <div class="bg-white rounded-lg p-6 text-center">
+                    <div class="text-4xl font-bold text-red-600" id="highCount">0</div>
+                    <div class="text-gray-600 mt-2">High Risk</div>
+                </div>
+                <div class="bg-white rounded-lg p-6 text-center">
+                    <div class="text-4xl font-bold text-yellow-600" id="mediumCount">0</div>
+                    <div class="text-gray-600 mt-2">Medium Risk</div>
+                </div>
+                <div class="bg-white rounded-lg p-6 text-center">
+                    <div class="text-4xl font-bold text-blue-600" id="lowCount">0</div>
+                    <div class="text-gray-600 mt-2">Low Risk</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Section -->
+        <div class="glass rounded-2xl p-8 mb-8" id="reportSection" style="display: none;">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-white mb-2">📊 Download Report</h2>
+                <p class="text-white opacity-80">Choose your preferred format</p>
+            </div>
+
+            <!-- Download All Button -->
+            <div class="text-center mb-8">
+                <button onclick="downloadAllFormats()" class="btn-3d btn-all pulse-animation">
+                    <span class="download-icon">📥</span> DOWNLOAD ALL FORMATS
+                </button>
+            </div>
+
+            <!-- Format Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+                <div class="format-card" onclick="downloadFormat('html')">
+                    <div class="format-icon">🌐</div>
+                    <h3 class="text-xl font-bold mb-2">HTML</h3>
+                    <p class="text-gray-600 text-sm">Interactive Web</p>
+                    <button class="btn-3d btn-html mt-4 text-sm">Download</button>
+                </div>
+                <div class="format-card" onclick="downloadFormat('pdf')">
+                    <div class="format-icon">📄</div>
+                    <h3 class="text-xl font-bold mb-2">PDF</h3>
+                    <p class="text-gray-600 text-sm">Printable Doc</p>
+                    <button class="btn-3d btn-pdf mt-4 text-sm">Download</button>
+                </div>
+                <div class="format-card" onclick="downloadFormat('excel')">
+                    <div class="format-icon">📊</div>
+                    <h3 class="text-xl font-bold mb-2">Excel</h3>
+                    <p class="text-gray-600 text-sm">Spreadsheet</p>
+                    <button class="btn-3d btn-excel mt-4 text-sm">Download</button>
+                </div>
+                <div class="format-card" onclick="downloadFormat('word')">
+                    <div class="format-icon">📝</div>
+                    <h3 class="text-xl font-bold mb-2">Word</h3>
+                    <p class="text-gray-600 text-sm">Editable Doc</p>
+                    <button class="btn-3d btn-word mt-4 text-sm">Download</button>
+                </div>
+                <div class="format-card" onclick="downloadFormat('json')">
+                    <div class="format-icon">⚙️</div>
+                    <h3 class="text-xl font-bold mb-2">JSON</h3>
+                    <p class="text-gray-600 text-sm">API Data</p>
+                    <button class="btn-3d btn-json mt-4 text-sm">Download</button>
+                </div>
+                <div class="format-card" onclick="downloadFormat('csv')">
+                    <div class="format-icon">📋</div>
+                    <h3 class="text-xl font-bold mb-2">CSV</h3>
+                    <p class="text-gray-600 text-sm">Table Format</p>
+                    <button class="btn-3d btn-csv mt-4 text-sm">Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loadingModal" class="modal">
+        <div class="modal-content text-center">
+            <div class="spinner"></div>
+            <h3 class="text-2xl font-bold mb-4" id="modalTitle">Processing...</h3>
+            <p class="text-gray-600" id="modalMessage">Please wait</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content text-center">
+            <div class="text-6xl mb-4">✅</div>
+            <h3 class="text-2xl font-bold mb-4">Success!</h3>
+            <p class="text-gray-600 mb-6" id="successMessage">Operation completed successfully</p>
+            <button onclick="closeModal('successModal')" class="btn-3d btn-html">Close</button>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content text-center">
+            <div class="text-6xl mb-4">❌</div>
+            <h3 class="text-2xl font-bold mb-4">Error</h3>
+            <p class="text-gray-600 mb-6" id="errorMessage">An error occurred</p>
+            <button onclick="closeModal('errorModal')" class="btn-3d btn-pdf">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let currentScanId = null;
+        let scanCheckInterval = null;
+
+        async function startScan() {
+            const url = document.getElementById('targetUrl').value.trim();
+            const scanType = document.getElementById('scanType').value;
+            
+            if (!url) {
+                showError('Please enter a target URL');
+                return;
+            }
+
+            // Validate URL format
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                showError('URL must start with http:// or https://');
+                return;
+            }
+
+            // Disable scan button
+            const scanBtn = document.getElementById('scanBtn');
+            scanBtn.disabled = true;
+            scanBtn.textContent = '🔄 Starting Scan...';
+            scanBtn.classList.add('opacity-50');
+
+            // Show progress section
+            document.getElementById('scanProgressSection').style.display = 'block';
+            document.getElementById('resultsPreview').style.display = 'none';
+            document.getElementById('reportSection').style.display = 'none';
+
+            try {
+                console.log('Starting scan:', url, scanType);
+                
+                const response = await fetch('/api/scan/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url, scanType})
+                });
+
+                const data = await response.json();
+                console.log('Scan response:', data);
+                
+                if (response.ok && data.status === 'started') {
+                    // Scan started successfully
+                    updateScanProgress(0, 'Scan initiated successfully');
+                    
+                    // Simulate scan progress with visual feedback
+                    simulateScanProgress(scanType);
+                    
+                    // Poll for scan completion
+                    pollScanStatus();
+                } else {
+                    throw new Error(data.error || 'Failed to start scan');
+                }
+            } catch (error) {
+                console.error('Scan error:', error);
+                showError('Failed to start scan: ' + error.message + '\n\nMake sure:\n1. ZAP is running on localhost:8080\n2. Flask server is running\n3. Target URL is accessible');
+                resetScanButton();
+            }
+        }
+
+        function simulateScanProgress(scanType) {
+            const steps = ['scanStep1', 'scanStep2', 'scanStep3', 'scanStep4'];
+            const durations = {
+                'quick': [2000, 3000, 2000, 1000],
+                'standard': [3000, 5000, 4000, 8000],
+                'deep': [5000, 10000, 8000, 15000]
+            };
+            
+            const stepDurations = durations[scanType] || durations['quick'];
+            let currentStep = 0;
+            let totalDuration = stepDurations.reduce((a, b) => a + b, 0);
+            let elapsed = 0;
+
+            steps.forEach((stepId, index) => {
+                setTimeout(() => {
+                    document.getElementById(stepId).classList.add('active');
+                    elapsed += stepDurations[index];
+                    const progress = Math.min((elapsed / totalDuration) * 100, 95);
+                    updateScanProgress(progress, `Step ${index + 1}/4 in progress...`);
+                    
+                    if (index > 0) {
+                        document.getElementById(steps[index - 1]).classList.remove('active');
+                        document.getElementById(steps[index - 1]).classList.add('completed');
+                    }
+                }, stepDurations.slice(0, index).reduce((a, b) => a + b, 0));
+            });
+        }
+
+        function updateScanProgress(percentage, message) {
+            const progressBar = document.getElementById('scanProgressBar');
+            const progressText = document.getElementById('scanProgressText');
+            
+            if (progressBar) {
+                progressBar.style.width = percentage + '%';
+            }
+            if (progressText) {
+                progressText.textContent = message;
+            }
+        }
+
+        function pollScanStatus() {
+            let pollCount = 0;
+            const maxPolls = 120; // 10 minutes maximum
+
+            scanCheckInterval = setInterval(async () => {
+                pollCount++;
+                
+                if (pollCount > maxPolls) {
+                    clearInterval(scanCheckInterval);
+                    showError('Scan timeout. Please check ZAP and try again.');
+                    resetScanButton();
+                    return;
+                }
+
+                try {
+                    // Get latest scan from history
+                    const response = await fetch('/api/scans/history?limit=1');
+                    const scans = await response.json();
+                    
+                    if (scans && scans.length > 0) {
+                        const latestScan = scans[0];
+                        
+                        if (latestScan.status === 'completed') {
+                            clearInterval(scanCheckInterval);
+                            currentScanId = latestScan.scan_id;
+                            showScanResults(latestScan);
+                        } else if (latestScan.status === 'failed') {
+                            clearInterval(scanCheckInterval);
+                            showError('Scan failed. Please check ZAP connection.');
+                            resetScanButton();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Poll error:', error);
+                }
+            }, 5000); // Check every 5 seconds
+        }
+
+        function showScanResults(scan) {
+            // Complete all progress steps
+            ['scanStep1', 'scanStep2', 'scanStep3', 'scanStep4'].forEach(step => {
+                document.getElementById(step).classList.remove('active');
+                document.getElementById(step).classList.add('completed');
+            });
+            
+            updateScanProgress(100, 'Scan completed successfully!');
+            
+            // Show results
+            setTimeout(() => {
+                document.getElementById('resultsPreview').style.display = 'block';
+                document.getElementById('reportSection').style.display = 'block';
+                
+                animateCounter('totalCount', scan.total_alerts);
+                animateCounter('highCount', scan.high_risk);
+                animateCounter('mediumCount', scan.medium_risk);
+                animateCounter('lowCount', scan.low_risk);
+                
+                resetScanButton();
+                
+                showSuccess('Scan completed! Found ' + scan.total_alerts + ' vulnerabilities.');
+            }, 1000);
+        }
+
+        function animateCounter(id, target) {
+            const el = document.getElementById(id);
+            let current = 0;
+            const increment = Math.max(1, Math.ceil(target / 20));
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                el.textContent = current;
+            }, 50);
+        }
+
+        function resetScanButton() {
+            const scanBtn = document.getElementById('scanBtn');
+            scanBtn.disabled = false;
+            scanBtn.textContent = '🔐 Start Security Scan';
+            scanBtn.classList.remove('opacity-50');
+        }
+
+        async function downloadFormat(format) {
+            if (!currentScanId) {
+                showError('Please run a scan first!');
+                return;
+            }
+
+            showModal('loadingModal', `Generating ${format.toUpperCase()}`, 'Creating report...');
+            simulateProgress();
+
+            try {
+                const response = await fetch(`/api/report/download/${currentScanId}/${format}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to generate report');
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `security_report_${currentScanId}.${format === 'word' ? 'docx' : format === 'excel' ? 'xlsx' : format}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                hideModal('loadingModal');
+                showSuccess('Report downloaded successfully!');
+            } catch (error) {
+                hideModal('loadingModal');
+                showError('Download failed: ' + error.message);
+            }
+        }
+
+        async function downloadAllFormats() {
+            if (!currentScanId) {
+                showError('Please run a scan first!');
+                return;
+            }
+
+            showModal('loadingModal', 'Generating All Formats', 'This may take a moment...');
+            
+            try {
+                const formats = ['html', 'pdf', 'json', 'csv', 'word', 'excel'];
+                
+                for (const format of formats) {
+                    await downloadFormat(format);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                hideModal('loadingModal');
+                showSuccess('All reports downloaded successfully!');
+            } catch (error) {
+                hideModal('loadingModal');
+                showError('Error downloading reports: ' + error.message);
+            }
+        }
+
+        function showModal(id, title, message) {
+            const modal = document.getElementById(id);
+            modal.classList.add('active');
+            if (title && modal.querySelector('#modalTitle')) {
+                modal.querySelector('#modalTitle').textContent = title;
+            }
+            if (message && modal.querySelector('#modalMessage')) {
+                modal.querySelector('#modalMessage').textContent = message;
+            }
+        }
+
+        function hideModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function closeModal(id) {
+            hideModal(id);
+        }
+
+        function showSuccess(message) {
+            document.getElementById('successMessage').textContent = message;
+            showModal('successModal');
+            setTimeout(() => hideModal('successModal'), 3000);
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            showModal('errorModal');
+        }
+
+        function simulateProgress() {
+            const fill = document.getElementById('progressFill');
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                } else {
+                    width += 2;
+                    fill.style.width = width + '%';
+                }
+            }, 30);
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (scanCheckInterval) {
+                clearInterval(scanCheckInterval);
+            }
+        });
+    </script>
+</body>
+</html>

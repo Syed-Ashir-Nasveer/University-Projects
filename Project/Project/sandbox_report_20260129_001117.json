@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-01-29T00:11:17.779882",
+  "summary": "No data available",
+  "logs": [
+    {
+      "timestamp": "2026-01-29 00:11:09",
+      "level": "INFO",
+      "message": "Starting execution: C:\\Python314\\python.exe D:/ashir/Uni Work/OS/Project/test-programs/test_memory.py"
+    },
+    {
+      "timestamp": "2026-01-29 00:11:09",
+      "level": "SUCCESS",
+      "message": "Process started with PID: 13556"
+    }
+  ],
+  "resources": []
+}

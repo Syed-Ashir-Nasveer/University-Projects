@@ -1,0 +1,31 @@
+# requirements.txt 
+# ============================================================================
+# requirements.txt
+# Python Dependencies for Security Scanner
+# ============================================================================
+
+# Core Dependencies
+# -----------------
+flask>=2.3.0                    # Web framework
+python-owasp-zap-v2.4>=0.0.22  # ZAP Python API client
+requests>=2.31.0                # HTTP library
+
+# Report Generation
+# -----------------
+reportlab>=3.6.0                # PDF generation
+python-docx>=0.8.11            # Word document generation
+openpyxl>=3.0.9                # Excel file generation
+
+# Additional Dependencies
+# -----------------------
+Jinja2>=3.1.2                  # Template engine (comes with Flask)
+Werkzeug>=2.3.0                # WSGI utility library (comes with Flask)
+MarkupSafe>=2.1.0              # XML/HTML escaping (comes with Jinja2)
+
+# Optional Dependencies (Uncomment if needed)
+# -------------------------------------------
+# schedule>=1.1.0              # Task scheduling
+# python-dotenv>=1.0.0         # Environment variables
+# SQLAlchemy>=2.0.0            # Advanced database ORM
+# gunicorn>=21.2.0             # Production WSGI server
+# flask-cors>=4.0.0            # CORS support for API

@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Ticketing System - Modern GUI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .float-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: white;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-20px) translateX(20px); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes ticketPop {
+            0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+            50% { transform: scale(1.1) rotate(2deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.6s ease-out both;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            opacity: 0.1;
+            transform: translate(30%, -30%);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #1f2937;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.8s ease-out;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: #f3f4f6;
+            padding: 0.5rem;
+            border-radius: 12px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.875rem;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #6b7280;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .tab-content {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .tab-content h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 1.25rem;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+        }
+
+        .next-preview {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 12px;
+            border: 2px solid #fbbf24;
+        }
+
+        .next-label {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .next-number {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #78350f;
+        }
+
+        .next-name {
+            font-size: 1.1rem;
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        .serve-box {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            border: 2px solid #10b981;
+            text-align: center;
+        }
+
+        .serve-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #047857;
+            margin-bottom: 0.5rem;
+        }
+
+        .queue-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .queue-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1f2937;
+        }
+
+        .queue-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+
+        .queue-list {
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .queue-item {
+            background: #f9fafb;
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: slideIn 0.3s ease-out both;
+        }
+
+        .queue-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .queue-item.first {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-color: #fbbf24;
+        }
+
+        .queue-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .ticket-number {
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .position-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 800;
+        }
+
+        .queue-item.first .position-badge {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+
+        .customer-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .next-badge {
+            margin-top: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #fbbf24;
+            color: #78350f;
+            padding: 0.375rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+            font-weight: 600;
+        }
+
+        .notification.success {
+            background: #10b981;
+        }
+
+        .notification.error {
+            background: #ef4444;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            animation: ticketPop 0.5s ease-out;
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .modal h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-ticket {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-name {
+            font-size: 1.5rem;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #9ca3af;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="bg-animation" id="bgAnimation"></div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification hidden"></div>
+
+    <!-- Served Modal -->
+    <div id="servedModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <svg width="40" height="40" fill="white" viewBox="0 0 24 24">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
+            <h2>NOW SERVING</h2>
+            <div class="modal-ticket" id="modalTicketNumber"></div>
+            <div class="modal-name" id="modalCustomerName"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-badge">
+                <svg width="28" height="28" fill="white" viewBox="0 0 24 24">
+                    <path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+                <h1>Queue Ticketing System</h1>
+            </div>
+            <p>Modern Customer Service Management</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card" style="animation-delay: 0s;">
+                <div class="stat-header">
+                    <span class="stat-label">Total Generated</span>
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                        <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                            <path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-value" id="statGenerated">0</div>
+            </div>
+
+            <div class="stat-card" style="animation-delay: 0.1s;">
+                <div class="stat-header">
+                    <span class="stat-label">Customers Served</span>
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-value" id="statServed">0</div>
+            </div>
+
+            <div class="stat-card" style="animation-delay: 0.2s;">
+                <div class="stat-header">
+                    <span class="stat-label">In Queue</span>
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                            <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-value" id="statInQueue">0</div>
+            </div>
+
+            <div class="stat-card" style="animation-delay: 0.3s;">
+                <div class="stat-header">
+                    <span class="stat-label">Utilization</span>
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                            <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-value" id="statUtilization">0%</div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Left Panel -->
+            <div class="panel">
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('generate')">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" style="display: inline; vertical-align: middle; margin-right: 0.5rem;">
+                            <path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                        Generate Ticket
+                    </button>
+                    <button class="tab" onclick="switchTab('serve')">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" style="display: inline; vertical-align: middle; margin-right: 0.5rem;">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                        Serve Customer
+                    </button>
+                </div>
+
+                <!-- Generate Tab Content -->
+                <div id="generateTab" class="tab-content">
+                    <h3>Add New Customer</h3>
+                    <div class="form-group">
+                        <label class="form-label">Customer Name</label>
+                        <input type="text" id="customerName" class="form-input" placeholder="Enter customer name..." onkeypress="if(event.key==='Enter') generateTicket()">
+                    </div>
+                    <button class="btn-primary" onclick="generateTicket()">
+                        🎫 Generate Ticket →
+                    </button>
+
+                    <div id="nextPreview" class="next-preview hidden">
+                        <div class="next-label">Next to be Served</div>
+                        <div class="next-number" id="previewNumber"></div>
+                        <div class="next-name" id="previewName"></div>
+                    </div>
+                </div>
+
+                <!-- Serve Tab Content -->
+                <div id="serveTab" class="tab-content hidden">
+                    <h3>Serve Next Customer</h3>
+                    <div id="serveContent"></div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Queue -->
+            <div class="panel">
+                <div class="queue-header">
+                    <h3 class="queue-title">📋 Current Queue</h3>
+                    <div class="queue-badge" id="queueCount">0 Waiting</div>
+                </div>
+                <div class="queue-list" id="queueList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Queue System Class
+        class QueueSystem {
+            constructor() {
+                this.customers = [];
+                this.ticketCounter = 1;
+                this.totalServed = 0;
+                this.maxSize = 100;
+            }
+
+            generateTicket(name) {
+                if (this.customers.length >= this.maxSize) {
+                    return { success: false, message: 'Queue is full!' };
+                }
+
+                const ticket = {
+                    id: this.ticketCounter,
+                    number: `T${String(this.ticketCounter).padStart(4, '0')}`,
+                    name: name || 'Customer',
+                    timestamp: new Date(),
+                    position: this.customers.length + 1
+                };
+
+                this.customers.push(ticket);
+                this.ticketCounter++;
+
+                return { success: true, ticket };
+            }
+
+            serveCustomer() {
+                if (this.customers.length === 0) {
+                    return { success: false, message: 'No customers in queue!' };
+                }
+
+                const served = this.customers.shift();
+                this.totalServed++;
+
+                // Update positions
+                this.customers.forEach((customer, index) => {
+                    customer.position = index + 1;
+                });
+
+                return { success: true, customer: served };
+            }
+
+            getNext() {
+                return this.customers.length > 0 ? this.customers[0] : null;
+            }
+
+            getQueue() {
+                return [...this.customers];
+            }
+
+            getStats() {
+                return {
+                    totalGenerated: this.ticketCounter - 1,
+                    totalServed: this.totalServed,
+                    inQueue: this.customers.length,
+                    capacity: this.maxSize,
+                    utilization: ((this.customers.length / this.maxSize) * 100).toFixed(1)
+                };
+            }
+        }
+
+        // Initialize system
+        const queue = new QueueSystem();
+
+        // Create background animation
+        const bgAnimation = document.getElementById('bgAnimation');
+        for (let i = 0; i < 20; i++) {
+            const circle = document.createElement('div');
+            circle.className = 'float-circle';
+            circle.style.width = `${Math.random() * 100 + 50}px`;
+            circle.style.height = circle.style.width;
+            circle.style.top = `${Math.random() * 100}%`;
+            circle.style.left = `${Math.random() * 100}%`;
+            circle.style.animationDuration = `${Math.random() * 10 + 10}s`;
+            circle.style.animationDelay = `${Math.random() * 5}s`;
+            bgAnimation.appendChild(circle);
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = '✨ ' + message;
+            notification.className = `notification ${type}`;
+            setTimeout(() => {
+                notification.className = 'notification hidden';
+            }, 3000);
+        }
+
+        function updateUI() {
+            // Update stats
+            const stats = queue.getStats();
+            document.getElementById('statGenerated').textContent = stats.totalGenerated;
+            document.getElementById('statServed').textContent = stats.totalServed;
+            document.getElementById('statInQueue').textContent = stats.inQueue;
+            document.getElementById('statUtilization').textContent = stats.utilization + '%';
+
+            // Update queue count
+            document.getElementById('queueCount').textContent = `${stats.inQueue} Waiting`;
+
+            // Update next preview
+            const nextCustomer = queue.getNext();
+            const nextPreview = document.getElementById('nextPreview');
+            if (nextCustomer) {
+                nextPreview.classList.remove('hidden');
+                document.getElementById('previewNumber').textContent = nextCustomer.number;
+                document.getElementById('previewName').textContent = nextCustomer.name;
+            } else {
+                nextPreview.classList.add('hidden');
+            }
+
+            // Update serve tab
+            updateServeTab();
+
+            // Update queue list
+            updateQueueList();
+        }
+
+        function updateServeTab() {
+            const nextCustomer = queue.getNext();
+            const serveContent = document.getElementById('serveContent');
+
+            if (nextCustomer) {
+                serveContent.innerHTML = `
+                    <div class="serve-box">
+                        <div class="next-label">Currently Serving</div>
+                        <div class="serve-number">${nextCustomer.number}</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #059669;">${nextCustomer.name}</div>
+                        <div style="margin-top: 1rem; color: #065f46; font-size: 0.95rem; font-weight: 600;">
+                            ⏱️ Position: #${nextCustomer.position}
+                        </div>
+                    </div>
+                    <button class="btn-primary btn-success" onclick="serveCustomer()">
+                        ✓ Mark as Served →
+                    </button>
+                `;
+            } else {
+                serveContent.innerHTML = `
+                    <div class="empty-state">
+                        <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; opacity: 0.3;">
+                            <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-width="1.5"/>
+                        </svg>
+                        <p style="font-size: 1.1rem; font-weight: 600;">No customers in queue</p>
+                        <p style="font-size: 0.95rem;">Generate tickets to start serving</p>
+                    </div>
+                `;
+            }
+        }
+
+        function updateQueueList() {
+            const queueList = document.getElementById('queueList');
+            const customers = queue.getQueue();
+
+            if (customers.length === 0) {
+                queueList.innerHTML = `
+                    <div class="empty-state">
+                        <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; opacity: 0.3;">
+                            <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-width="1.5"/>
+                        </svg>
+                        <p style="font-size: 1.1rem; font-weight: 600;">Queue is empty</p>
+                        <p style="font-size: 0.95rem;">Start by generating tickets</p>
+                    </div>
+                `;
+                return;
+            }
+
+            queueList.innerHTML = customers.map((customer, index) => `
+                <div class="queue-item ${index === 0 ? 'first' : ''}" style="animation-delay: ${index * 0.05}s;">
+                    <div class="queue-item-header">
+                        <span class="ticket-number" style="color: ${index === 0 ? '#92400e' : '#667eea'};">
+                            ${customer.number}
+                        </span>
+                        <div class="position-badge">
+                            #${customer.position}
+                        </div>
+                    </div>
+                    <div class="customer-name">${customer.name}</div>
+                    ${index === 0 ? '<div class="next-badge">✨ Next in Line</div>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.closest('.tab').classList.add('active');
+
+            // Show/hide content
+            document.getElementById('generateTab').classList.toggle('hidden', tab !== 'generate');
+            document.getElementById('serveTab').classList.toggle('hidden', tab !== 'serve');
+
+            updateUI();
+        }
+
+        function generateTicket() {
+            const nameInput = document.getElementById('customerName');
+            const name = nameInput.value.trim();
+
+            const result = queue.generateTicket(name);
+
+            if (result.success) {
+                showNotification(`Ticket ${result.ticket.number} generated!`, 'success');
+                nameInput.value = '';
+            } else {
+                showNotification(result.message, 'error');
+            }
+
+            updateUI();
+        }
+
+        function serveCustomer() {
+            const result = queue.serveCustomer();
+
+            if (result.success) {
+                showNotification(`Serving ${result.customer.name}`, 'success');
+
+                // Show modal
+                document.getElementById('modalTicketNumber').textContent = result.customer.number;
+                document.getElementById('modalCustomerName').textContent = result.customer.name;
+                document.getElementById('servedModal').classList.remove('hidden');
+
+                setTimeout(() => {
+                    document.getElementById('servedModal').classList.add('hidden');
+                }, 3000);
+            } else {
+                showNotification(result.message, 'error');
+            }
+
+            updateUI();
+        }
+
+        // Close modal on click
+        document.getElementById('servedModal').addEventListener('click', function() {
+            this.classList.add('hidden');
+        });
+
+        // Initial render
+        updateUI();
+    </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.dll
+
+# ML / Tensorflow
+*.h5
+*.pb
+*.ckpt
+
+# Logs
+*.log
+tensorboard/
+
+# Executables
+*.exe
+
+# Databases
+*.db
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db

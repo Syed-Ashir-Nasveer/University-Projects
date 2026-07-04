@@ -1,0 +1,226 @@
+{
+  "metadata": {
+    "generated": "2026-02-02T15:25:26.577958",
+    "version": "2.0",
+    "system": "Windows"
+  },
+  "execution": {
+    "duration": 13,
+    "threat_score": 40,
+    "total_logs": 14
+  },
+  "resources": {
+    "peak_cpu": 33.9,
+    "peak_memory": 85.91015625,
+    "avg_threads": 4.0
+  },
+  "network": {
+    "total_connections": 0,
+    "connections": []
+  },
+  "files": {
+    "total_accessed": 8,
+    "files": [
+      "C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "C:\\Windows\\System32\\en-US\\KernelBase.dll.mui"
+    ]
+  },
+  "logs": [
+    {
+      "timestamp": "2026-02-02 15:25:16.370",
+      "level": "ANALYSIS",
+      "message": "File hash MD5: 76530da018ee99e435ce9bb8689f6e4f",
+      "pid": 9916
+    },
+    {
+      "timestamp": "2026-02-02 15:25:16.370",
+      "level": "ANALYSIS",
+      "message": "File hash SHA-256: 07aec65e5fcaebf1faefe253d169c9013fd67c30ba25b9067d99205813e99ab6",
+      "pid": 9916
+    },
+    {
+      "timestamp": "2026-02-02 15:25:16.370",
+      "level": "INFO",
+      "message": "Executing: C:\\Python314\\python.exe C:/ashir/Uni Work/OS/Project/test-programs/test_resources.py --batch --recursive --filter \"*.py\" --log batch.log",
+      "pid": 9916
+    },
+    {
+      "timestamp": "2026-02-02 15:25:16.370",
+      "level": "INFO",
+      "message": "Environment isolated to: C:\\ashir\\Uni Work\\OS\\Project\\sandbox_root\\home",
+      "pid": 9916
+    },
+    {
+      "timestamp": "2026-02-02 15:25:16.378",
+      "level": "SUCCESS",
+      "message": "Process started - PID: 2204",
+      "pid": 2204
+    },
+    {
+      "timestamp": "2026-02-02 15:25:16.534",
+      "level": "BLOCKED",
+      "message": "Restricted path access: C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "pid": 2204
+    },
+    {
+      "timestamp": "2026-02-02 15:25:17.091",
+      "level": "BLOCKED",
+      "message": "Restricted path access: C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "pid": 2204
+    },
+    {
+      "timestamp": "2026-02-02 15:25:18.207",
+      "level": "BLOCKED",
+      "message": "Restricted path access: C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "pid": 2204
+    },
+    {
+      "timestamp": "2026-02-02 15:25:19.316",
+      "level": "BLOCKED",
+      "message": "Restricted path access: C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "pid": 2204
+    },
+    {
+      "timestamp": "2026-02-02 15:25:20.430",
+      "level": "BLOCKED",
+      "message": "Restricted path access: C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "pid": 2204
+    },
+    {
+      "timestamp": "2026-02-02 15:25:21.011",
+      "level": "BLOCKED",
+      "message": "Restricted path access: C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "pid": 2204
+    },
+    {
+      "timestamp": "2026-02-02 15:25:22.169",
+      "level": "BLOCKED",
+      "message": "Restricted path access: C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "pid": 2204
+    },
+    {
+      "timestamp": "2026-02-02 15:25:23.327",
+      "level": "BLOCKED",
+      "message": "Restricted path access: C:\\Windows\\System32\\en-US\\KernelBase.dll.mui",
+      "pid": 2204
+    },
+    {
+      "timestamp": "2026-02-02 15:25:23.827",
+      "level": "ANALYSIS",
+      "message": "Threat Score: 40/100",
+      "pid": 2204
+    }
+  ],
+  "resource_timeline": [
+    {
+      "time": "15:25:16",
+      "elapsed": 0,
+      "cpu": 30.9,
+      "memory": 9.03515625,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:17",
+      "elapsed": 0,
+      "cpu": 33.9,
+      "memory": 17.2109375,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:17",
+      "elapsed": 1,
+      "cpu": 28.0,
+      "memory": 24.84765625,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:18",
+      "elapsed": 1,
+      "cpu": 28.0,
+      "memory": 32.48046875,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:18",
+      "elapsed": 2,
+      "cpu": 33.6,
+      "memory": 40.11328125,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:19",
+      "elapsed": 2,
+      "cpu": 11.3,
+      "memory": 47.74609375,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:19",
+      "elapsed": 3,
+      "cpu": 22.5,
+      "memory": 47.74609375,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:20",
+      "elapsed": 3,
+      "cpu": 33.8,
+      "memory": 55.37890625,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:20",
+      "elapsed": 4,
+      "cpu": 29.7,
+      "memory": 63.01171875,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:21",
+      "elapsed": 5,
+      "cpu": 30.7,
+      "memory": 70.64453125,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:22",
+      "elapsed": 5,
+      "cpu": 25.2,
+      "memory": 78.27734375,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:22",
+      "elapsed": 6,
+      "cpu": 15.6,
+      "memory": 85.91015625,
+      "threads": 4,
+      "handles": 0
+    },
+    {
+      "time": "15:25:23",
+      "elapsed": 6,
+      "cpu": 25.3,
+      "memory": 85.91015625,
+      "threads": 4,
+      "handles": 0
+    }
+  ]
+}
